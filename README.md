@@ -4,8 +4,7 @@ The following are list of projects, assignments, and work that I have deemed wor
 The Folder Titled Linux_Week08, is a small collection of homework assignments from a C programming Course in a Linux Environment.
 This holds very simple C programs that run on Linux systems, and show I have experience in Linux, specifically Bash, C programming, and basic Shells.
 
-The Folder Titled Chatbot_Project is a simple chatbot using POST and GET Json requests from a webservice. This is one of the first of projects involving http requests.
-I have ever created, but, as it was a final project, is also among the most well-polished. 
+The Folder Titled Chatbot_Project is a simple chatbot using POST and GET Json requests from a webservice. This is one of the first of projects involving http requests I have ever created, but, as it was a final project, is also among the most well-polished. 
 This is a great project to look out to see how I write code, and my commenting style. 
 
 The Folder Titled MIPS_Finite_State_Machine contains Verilog Hardware Description Language Code of a (mostly) functional MIPS instruction set processor. 
