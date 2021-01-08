@@ -1,0 +1,19 @@
+/*
+This mux design was adapted from given code by the professor. It uses a single control singal to determin which input to pass. It is satisfactory for all 5 multiplexers in the design
+
+Ironically, it is actually not sufficent for every mux, as Mux0 requires, as sepcifed by the Mips Diagram, smaller input and output wires.
+
+Sel is a control signal which determines which of the two inputs are to be sent to the output Out.
+In1, In2 - The input ports 
+*/
+module Mux(Out, Sel, In1, In2);
+	output reg [31:0] Out;
+	input [31:0] In1, In2;
+	input Sel; // Selector signal
+	
+	always @(Sel, In1, In2)
+	case (Sel) // a 2 -> 1 multiplexor
+		0: Out <= In1;
+		1: Out <= In2;
+	endcase
+endmodule

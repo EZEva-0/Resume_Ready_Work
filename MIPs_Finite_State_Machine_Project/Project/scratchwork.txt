@@ -1,0 +1,6 @@
+5'b10011 : Zero = ReadData1 == MuxOutput ? 1 : 0;                       //Beq (passes only a 1 or zero. This is sent to the ANDGate to branch)
+        5'b10011 : Zero = ReadData1 != MuxOutput ? 1 : 0;                       //Bne (passes only a 1 or zero)
+        5'b10100 : Zero = ReadData1 > 0 ? 1 : 0;                                //Branch greater than zero (passes only a 1 or zero)
+        5'b10101 : Zero = ReadData1 < 0 ? 1 : 0;                                //Branch less than zero (passes only a 1 or zero)
+        5'b10110 : Zero = ReadData1 < 0 ? 1 : 0;                                //Load word
+        5'b10111 : Zero = ReadData1 < 0 ? 1 : 0;                                //store word

@@ -1,0 +1,8 @@
+/*
+In the mips diagram, there is a floating and gate which takes in two inputs, one from the Control module, and one from ALU2. Instead of lumping this hardware into the Mux associated, or in the ALU or control modules, (although it probably could go into the Control module), I have chosen to create a "helper module". It 'could' be handled by the testbench, but I personally perfer to limit the amount of hardware needed in the testbench. If possible, I want to limit the testbench to just startup, initalization, and printing to screen. 
+*/
+module ANDGate(Branch, Zero, output1);
+    input Branch, Zero;
+    output output1;
+    assign output1 = (Branch && Zero);
+endmodule

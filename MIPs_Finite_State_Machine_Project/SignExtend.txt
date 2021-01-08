@@ -1,0 +1,17 @@
+/*
+This module extends a 16 bit number to a 32 bit number, by appending 1's or zero's to the frount of the number.
+This is a defined module in the mips diagram, so it is a full module here.
+It is clocked to ensure correct timing with other clocked modules, though I suspect that is not strictly nessesary.
+*/
+module SignExtend(clock, Extend, Extended);
+input clock;
+input [15:0] Extend; // 16-bit input
+output reg [31:0] Extended; // 32-bit output
+
+  always @(posedge clock) begin
+ if (Extend[15]) 
+    Extended[31:16] <= 16'b1111111111111111;
+else 
+    Extended[31:16] <= 16'b0000000000000000; 
+end
+endmodule

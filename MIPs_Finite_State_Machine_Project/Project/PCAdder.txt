@@ -1,0 +1,11 @@
+/*
+The PC Adder simply adds four to the PCUnitInput, (an address), and sends it to the output.
+*/
+module PCAdder(clock, PCUnitInput, PCAdderOutput, four);
+  input clock;
+  input [31:0] PCUnitInput;
+  input [31:0] four;
+  output[31:0] PCAdderOutput;
+  
+  assign PCAdderOutput = PCUnitInput + four;
+endmodule

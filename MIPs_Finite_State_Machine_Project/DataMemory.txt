@@ -1,0 +1,41 @@
+/*
+* Module: DataMemory - The Mips Data Memory Module, used for data storage
+* Author: Evan Branco.
+* Ports: Inputs: Address, MemWriteData, memReadData, memWrite, MemRead, Clock
+           used to detemined which memory address is being read and written to, as well as the clock for syncronization
+            MemRead and memWrite are control signals
+        Outputs: memReadData,
+            The contents of the memory address that is to be read
+*/
+module DataMemory (Clock,Address,memWriteData,memReadData,memWrite,memRead);  
+input Clock;
+input[31:0] Address;
+input[31:0] memWriteData;
+output reg [31:0] memReadData;
+input memWrite;
+input memRead;
+      //mips memory is bit addressable - meaning 8 bit memory.
+      //in addittion, mips memory allows for 32 address lines. Thus, 2^32 x 8 Ram, or 4 gb of RAM memory However, for easy of display and testing, our memory is much smaller
+    integer i;
+    integer o;
+    reg [31:0] ram [8192 : 'h3fff]; // for the project we require memory big enough for 0x2000 to 0x3fff
+    //doing them both as hex in this format leads to an error where verilog thinks I'm starting and ending a string, so I just conveted the first to its bit equivalent
+    initial begin  //at startup, initalize memory to all zeros
+        for(i=8192;i<'h3fff;i=i+1)begin
+            ram[i] <= 32'h0; 
+        end
+	$readmemh("data.txt", ram);//after inializing the memory, attempt to fill using a given datafile.
+    end  
+    always @(posedge Clock) begin  //write to memory
+        if (memWrite == 1) begin  //if mem write is 1
+            ram[Address/4] <= memWriteData;  //place memData into memory at address location
+        end  //else, do not write
+      //if memWrite is not one, check for memRead
+        else if(memRead == 1) begin//if memRead is selected, pass the instruciton at Address to memReadData
+                memReadData <= ram[Address/4];
+        end
+        else begin// if neither are slected, read nothing, write nothing. (pass zero to memReadData)
+            memReadData <= 32'h0;
+        end
+    end
+ endmodule  

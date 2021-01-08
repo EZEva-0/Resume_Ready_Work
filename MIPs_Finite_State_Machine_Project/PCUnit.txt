@@ -1,0 +1,31 @@
+/*
+The PCUnit drives the entire rest of the cycle. It creates the intial address of zero, and drived both the InstructionMemory and and PCAdder Modules by passing in the current address location. This data is used to pull instruction data and conduct the operation, and incremement the currentAddress via the PCAdderInput, respectively. (Technically, the PCAdderInput comes from a mux at the end of the cycle, but it is reminant from a previous program version.)
+*/
+module PCUnit(clock, PCAdderInput, PCOutput, InstructionMemoryOutput);
+  input clock;
+
+  input [31:0] PCAdderInput;            
+  // declaring an input wire of 32 bit length, or 4 bytes, to take an instruction address from the PC Adder
+
+  output [31:0] PCOutput;         
+  // output wire to push the PC Unit address to the PCAdder
+
+  output [31:0] InstructionMemoryOutput;        
+  //output wire to push the PC Unit address to Instruction Memory
+  
+  reg[31:0] address;  
+  initial address = 32'h00000000;
+  //Register to store the the Input and output address, begins at zero address
+  
+  
+  always@(posedge clock) // clock loop to regular register access
+    begin
+      address <= PCAdderInput; // we put the pc address into the register
+    end
+  
+  assign PCOutput = address; 
+  assign InstructionMemoryOutput = address;
+  //finally, we assign the output wires their value, recieved from register
+  
+endmodule
+

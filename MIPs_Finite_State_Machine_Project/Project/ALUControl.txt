@@ -1,0 +1,110 @@
+/*
+Note, Several changes to the ALU control unit have been made since the last interation. I have increased the size of the ALU control singal output, to accomidate more singals. This will allow me to implement more instructions. the ALUOutput reg has increased from 3 bits to 4. I have also changed the singal ordering, to make reading the operations easier. This has no affect on the operation of the ALU, as these changes were made on the ALU as well. (ex. the AND singal went from 000 to 000
+
+The ALUControl Module signals the active and inactive elements to various hardware. This, overall, controls the execution of instructions.
+The FunctInput takes the funct field of an instruction and uses it to detemine the operation that needs to be performed by the ALU
+The ALUOpInput takes a control signal from the Control Module to decide/ override the operations of the ALU
+The JR singal is used for the additional, purple wires to, to facilitate the jr instruction.
+ALUOutput is a signal sent to the ALU based on all data, to decide which operations need to be performed by the ALU.
+*/
+module ALUControl (FunctInput, ALUOpInput, ALUOutput, JR);
+
+  input wire [5:0] FunctInput;
+  input wire [3:0] ALUOpInput;
+  output reg [4:0] ALUOutput;
+  output reg JR = 0;   
+
+  always@*
+  begin
+    if(ALUOpInput == 4'b0000) //R-Type, check funct value
+    begin
+        if(FunctInput == 6'b100000) // add
+            ALUOutput = 00000;
+        else if(FunctInput == 6'b100100) // AND
+            ALUOutput = 00100;
+        else if(FunctInput == 6'b001000) begin // jr
+            ALUOutput = 10001; //add PC (immediate) to regiseter; addi
+	        JR = 1;
+	    end
+        else if(FunctInput == 6'b000010) // mul
+            ALUOutput = 00011;
+        else if(FunctInput == 6'b011000) // mult
+            ALUOutput = 10000;
+        else if(FunctInput == 6'b010000) // mfhi
+            ALUOutput = 01110;
+        else if(FunctInput == 6'b010010) // mflo
+            ALUOutput = 01101;
+        else if(FunctInput == 6'b100111) // nor
+            ALUOutput = 00111;
+        else if(FunctInput == 6'b100101) // or
+            ALUOutput = 00101;
+        else if(FunctInput == 6'b000000) // sll
+            ALUOutput = 01000;
+        else if(FunctInput == 6'b101010) // slt
+            ALUOutput = 01010;
+        else if(FunctInput == 6'b000011) // sra
+            ALUOutput = 01100;
+        else if(FunctInput == 6'b000010) // srl
+            ALUOutput = 01001;
+        else if(FunctInput == 6'b100010) // sub
+            ALUOutput = 00001;
+        else if(FunctInput == 6'b100110) // xor
+            ALUOutput = 00110;
+        else if(FunctInput == 6'b001100) // syscall
+            ALUOutput = 01111;
+        else if(FunctInput == 6'b011010) // divide
+            ALUOutput = 00010;
+    end
+    else if(ALUOpInput == 4'b0001) // special r type, force addition
+    begin
+        ALUOutput = 00000;
+    end
+    if(ALUOpInput == 4'b0010) //Jump
+    begin
+        //ALU not used
+    end
+    if(ALUOpInput == 4'b0011) //Jump and Link
+    begin
+        ALUOutput = 10001; //ALU used to add an address, (PC+4) to register, addi
+    end
+    else if(ALUOpInput == 4'b0100) // Load Word
+    begin
+    	    ALUOutput = 10001; //add an immediate to a register, addi
+    end
+    else if(ALUOpInput == 4'b0101) // Store word
+    begin
+    	    ALUOutput = 10001; //add and immediate to a register addi
+    end
+    else if(ALUOpInput == 4'b0110) // Branch on Equal
+    begin
+    	    ALUOutput = 10011;
+    end
+    else if(ALUOpInput == 4'b0111) // Branch Not Equal
+    begin
+    	    ALUOutput = 10011; 
+    end
+    else if(ALUOpInput == 4'b1000) // Branch on Greater than Zero
+    begin
+    	    ALUOutput = 10100;
+    end
+    else if(ALUOpInput == 4'b1001) // Branch less than zero
+    begin
+    	    ALUOutput = 10101;
+    end
+    else if(ALUOpInput == 4'b1010) // I Type - Add Immediate
+    begin
+    	    ALUOutput = 10001; 
+    end
+    else if(ALUOpInput == 4'b1011) // I Type - Add Immediate Unsigned
+    begin
+    	    ALUOutput = 10010;
+    end
+    else if(ALUOpInput == 4'b1100) // I Type - Generic
+    begin
+    	    ALUOutput = 0000; //add two registers
+    end
+    else 
+        JR = 0;
+    
+  end
+endmodule

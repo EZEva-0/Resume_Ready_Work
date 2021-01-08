@@ -1,0 +1,35 @@
+/*
+The instruction Memory holds instuction data, which is to be parsed and used later in the cycle.
+
+PCUnitInput provides an address in memory for the module to look for instruction data, and InstructionOutput is the data contained at this location, once it has been extracted. 
+*/
+module InstructionMemory(clock, PCUnitInput, InstructionOutput); 
+  input clock;
+  
+  input[31:0]  PCUnitInput;
+  //Instruction address input
+  
+  output[31:0] InstructionOutput;
+  //Instruction output, the data contained in memory at location PCUnitInput  
+  
+  //Note to self, ask professor what the exact size should be, as you may be one to two elements off the mark, you may need the total to be 2049 or 2048.  
+  
+  reg [31:0] mem[0:2047]; // 0 to 2047 = 2048 effective memory elements of size 32 bit
+  // Instruction Memory Space, there are 0x2000 bytes, or 8192 bytes. Dividing by 4 to determine the number of instruction words we have, (as each instruction word is 4 bytes long, 8 hex characters, 32 bits), we get 2048. We subtract one to account for the zero address, leaving us 2047. 
+  
+  integer i;    
+  initial begin
+    begin for(i = 0; i < 2049; i = i+1)
+      mem[i] = 32'h00000000;    
+    end
+    $readmemh("code.txt", mem);
+    /*begin for(i = 0; i < 2049; i = i+1)
+         $display ("Mem[%d]=%h",i,mem[i]); end*/
+  end
+
+     //The above code will intialize the the instruction memory with all zero instructions to begin execution
+  
+  assign InstructionOutput = mem[PCUnitInput/4]; // we convert the hex address to an element number by dividing by 4, ex; address 00000004 is the 1st element, thus we divide by 4.
+  
+  //This passes to the Output the instruction in memory located at address PCUnitInput 
+  endmodule

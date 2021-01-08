@@ -1,0 +1,67 @@
+/*
+* Module: Registers - the Mips Register File Module, used for high speed instruction operations
+* Author: Evan Branco.
+* Ports: Inputs: ReadReg1, ReagReg2, WriteReg, Clock
+            used to detemined which registers are being read and written to, as well as the clock for syncronization
+        Outputs: ReadData1, ReadData2
+            The contents of the registers that are to be read
+*/
+module Registers(ReadReg1,ReadReg2,WriteReg,WriteData,RegWrite,Clock,ReadData1,ReadData2);
+    input [4:0] ReadReg1, ReadReg2, WriteReg;
+	input [31:0] WriteData;
+	input RegWrite,Clock;
+	
+    output reg [31:0] ReadData1, ReadData2;
+    
+    reg [31:0] Registers [0:31];
+    //mips register memory has 32 register locations, not all are usable, but many are.
+    //those that are used by mips instructions will need to be iniatilzed to zero
+    //for example, 26 and 27 are reserved for the kernal, and are not used, thus we do not initialize them at all
+    
+    initial begin
+		Registers[0] <= 32'h0;
+		//reserved registers
+		Registers[8] <= 32'h0;
+		//reserved registers
+		Registers[9] <= 32'h0;
+		Registers[10] <= 32'h0;
+		Registers[11] <= 32'h0;
+		Registers[12] <= 32'h0;
+		Registers[13] <= 32'h0;
+		Registers[14] <= 32'h0;
+		Registers[15] <= 32'h0;
+		Registers[16] <= 32'h0;
+		Registers[17] <= 32'h0;
+		Registers[18] <= 32'h0;
+		Registers[19] <= 32'h0;
+		Registers[20] <= 32'h0;
+		Registers[21] <= 32'h0;
+		Registers[22] <= 32'h0;
+		Registers[23] <= 32'h0;
+		Registers[24] <= 32'h0;
+		Registers[25] <= 32'h0;
+		//reserved regsiters
+		Registers[29] <= 32'h0; //this needs to point to the start of memory, so it should be given a specific value. In our case, memory starts at hex value 2000, but it is arbitrary, wherever we decide memory should start. For now, it will start at zero
+		//reserved Registers
+		Registers[31] <= 32'b0;
+	end
+    //the module is syncronized by a clock
+    always @(posedge Clock)
+	begin
+		//if we have a regWrite value of 1, we need to place data into the specified register
+		if (RegWrite == 1) 
+		begin
+		if(WriteReg != 0) // we cannot write to the zero register, it is ALWAYS zero
+			Registers[WriteReg] <= WriteData;
+		end
+	end
+	//otherwise, regWrite is zero, and thus we need not write to registers.
+	
+	//register output will occur on negedge instead of posedge to ensure input stablilty
+	always @(negedge Clock)
+	begin
+	    //Now we need to pass read register data to the outputs for the rest of the cycle. 
+	    ReadData1 <= Registers[ReadReg1]; //here we place our read registers into our output registers
+	    ReadData2 <= Registers[ReadReg2];
+	end
+endmodule

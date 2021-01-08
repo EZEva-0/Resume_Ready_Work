@@ -1,0 +1,14 @@
+/*
+ALU1 a simple adder, adding the result of a previous ShiftLeft2 module and an adder Module, passing the result to another mux for further access. This adder is used principlaly in branching and jump instructions.
+
+The name is poor I understand, but I intially misread the mips diagram and assumed this was a full ALU module, and when I realized my mistake I was so overcome with laughter that I just decided to keep it. It's the real ALU! The other one is a faker!
+*/
+module ALU1(clock, ReadData1, MuxOutput, ALUResult);
+    input clock;
+    input [31:0] ReadData1;
+    input [31:0] MuxOutput;
+    output [31:0] ALUResult;
+
+    assign ALUResult = ReadData1+MuxOutput;
+    //Yep, that's really all there is to it.
+endmodule

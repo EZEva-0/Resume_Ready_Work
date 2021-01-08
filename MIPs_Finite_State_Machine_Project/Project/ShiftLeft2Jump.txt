@@ -1,0 +1,15 @@
+/*
+This is the shift Left module, while a full module
+is likely not needed, and this operation could be
+done at the start of nessesary modules, they are
+clearly unique, full modules in the mips diagram.
+This particular version has differently sized input/ output ports to accomidate the mips design. It is functionally identical
+*/
+module ShiftLeft2Jump (clock, shiftValue, shiftedValue); 
+    input clock;
+    input [25:0] shiftValue;
+    output reg [27:0] shiftedValue;
+    always @(posedge clock)begin
+        shiftedValue <= shiftValue << 2; 
+    end
+endmodule

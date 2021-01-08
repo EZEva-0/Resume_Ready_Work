@@ -1,0 +1,73 @@
+/*
+There are two ALU modules in the diagram, one of which
+has a single output, one which has two.
+I have named the 2 output ALU2, and the single output
+modules ALU1
+
+The above commentary is incorrect, but is kept for posterity. See ALU1, or, The Real ALU.
+
+ALU2 is the only true ALU in the mips diagram, and sits between the Register and Data Memory modules. It is driven by the ALU control module, and performs operations on given registers and Immediates to facilitate the instruction cycle. 
+*/
+module ALU2(clock, ALUContolSignal, ReadData1, MuxOutput, ALUResult, Zero);
+	// here we begin inializing the ports, note, the naming is often inconsistent between modules, but an attempt was made for naming to be descriptive, if it cannot be consistent.
+    input clock;
+    input [4:0] ALUContolSignal;
+    input [31:0] ReadData1;
+    input [31:0] MuxOutput;
+    output reg [31:0] ALUResult;
+    output reg Zero; 
+    
+    reg [64:0] Result;
+    reg [31:0] HI; // used in the MFHI and MFLO commands, division
+    reg [31:0] LO;
+    always @(posedge clock)
+    begin //Note, I am assuming that ReadData1 takes presedence, as it is labled above the Mux output in the Mips diagram. (this matters for division, for example) ReadData1 corresponds the the first register field.
+
+	// here we begin the process of performing operations, given ALU Control singals. Some instructions share operations, many do not.
+        case (ALUContolSignal) // the alu Control signal determines the operation conducted
+        5'b00000 : ALUResult <= ( $signed(ReadData1) +  $signed(MuxOutput) );       // Add, (signed numbers)
+        5'b00001 : ALUResult <= ( $signed(ReadData1) -  $signed(MuxOutput) );       // Subtract (also signed)
+        5'b00010 : begin
+            HI <= ($signed(ReadData1) /  $signed(MuxOutput));                       // Divide
+            LO <= ($signed(ReadData1) %  $signed(MuxOutput)); end
+        5'b00011 : ALUResult <= ( $signed(ReadData1) *  $signed(MuxOutput) );       // Mulitply (no HI/LO, meaning this is the MUL command)
+        5'b00100 : ALUResult <= (ReadData1 & MuxOutput);                            // AND
+        5'b00101 : ALUResult <= (ReadData1 | MuxOutput);                            // OR
+        5'b00110 : ALUResult <= (ReadData1 ^ MuxOutput);                            // XOR
+        5'b00111 : ALUResult <= !(ReadData1 | MuxOutput);                           // NOR
+        5'b01000 : ALUResult <= (ReadData1 << MuxOutput);                           // shift logical left (unsigned)
+        5'b01001 : ALUResult <= (ReadData1 >> MuxOutput);                           // shift right logical (unsigned)
+        5'b01010 : begin                                                            // set on less than (signed)
+            if(ReadData1 < MuxOutput)
+                ALUResult <= 1;
+            else
+                ALUResult <= 0;        end
+        5'b01100 : ALUResult <= ($signed(ReadData1) >>> $signed(MuxOutput));        // shift right arithmetic
+        5'b01101 : ALUResult <= LO;                                                 // MFLO
+        5'b01110 : ALUResult <= HI;                                                 // MFHI
+        5'b01111 :  begin                                                           // Syscall
+            if(ReadData1 == MuxOutput)
+                ALUResult <= 1;
+            else
+                ALUResult <= 0;        end
+        5'b10000 : begin                                                            //  Multiply (Hi and LO, this is the MULT command)
+        Result = ( $signed(ReadData1) *  $signed(MuxOutput) );
+            HI = Result[64:32];
+            LO = Result[31:0];         end
+        5'b10001 : ALUResult <= ( $signed(ReadData1) + $signed(MuxOutput) );        // addi (signed numbers)
+        5'b10010 : ALUResult <= ( (ReadData1) + (MuxOutput) );                      //addiu (unsigned)
+        //5'b11111 : ALUResult <= (PCCurrent + 4); // jr, pass the next instruction address to the 31 register
+        5'b10011 : Zero = ReadData1 == MuxOutput ? 1 : 0;                       //Beq (passes only a 1 or zero. This is sent to the ANDGate to branch)
+        5'b10011 : Zero = ReadData1 != MuxOutput ? 1 : 0;                       //Bne (passes only a 1 or zero)
+        
+	//Notice the change in formatting? I learned a bit of new syntax at this point.
+	5'b10100 : Zero = ReadData1 > 0 ? 1 : 0;                                //Branch greater than zero (passes only a 1 or zero)
+        5'b10101 : Zero = ReadData1 < 0 ? 1 : 0;                                //Branch less than zero (passes only a 1 or zero)
+        5'b10110 : Zero = ReadData1 < 0 ? 1 : 0;                                //Load word
+        5'b10111 : Zero = ReadData1 < 0 ? 1 : 0;                                //store word
+
+	default;//For Jump Commands, do nothing as they are not needed. The output is not read by the data memory, and is discarded, so we could pass any value we want, but leaving it unknown is also acceptable
+        endcase
+    
+    end
+endmodule

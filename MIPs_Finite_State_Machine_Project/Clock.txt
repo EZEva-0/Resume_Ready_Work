@@ -1,0 +1,16 @@
+/*
+The standard clock module has not changed since its inclusion in the second project.
+*/
+module Clock (clock);
+  parameter LO = 10;
+  parameter HI = 10;
+  output reg clock;
+  
+  initial 
+    clock = 0;
+    always
+        begin
+            #LO clock = ~clock;
+            #HI clock = ~clock;
+        end
+endmodule

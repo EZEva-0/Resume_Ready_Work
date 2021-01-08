@@ -1,0 +1,149 @@
+/*
+This testbench is the only unfinished module other than the ALU2. As a result, there is no ability to print output to the console, nor are the 3 PC-incremental instructions implemented. As a result, the work that is present is insufficent.
+*/
+module testBench();  
+
+    output wire clk; //initalize clock wires
+    //initalize wires for PCUnit, adder, and Instrcution memory
+    inout [31:0] PCUnitOutputPCAdder;
+    inout [31:0] PCUnitInput;
+    inout [31:0] PCUnitOutput;
+    inout [31:0] PCAdderOutput;
+    output[31:0] Instr;
+    
+    reg [5:0] Funct;
+    reg [15:0] Immediate;
+    reg [25:0] JumpAddress;
+    
+    reg [31:0] four;
+    reg [31:0] address;
+    wire [3:0] ALUOp;
+    wire [4:0] ALUControlOutput;
+    wire JR;
+  
+    // initialize register and memory wires
+    inout  [4:0] ReadReg1, ReadReg2, ReadReg3, WriteReg;
+    inout  [31:0] WriteData;
+    inout  RegWrite;
+    output [31:0] ReadData1;
+    output  [31:0] ReadData2;
+    
+    
+    inout [31:0] SignExtendOutput;
+    inout [27:0] Shift1Output;
+    inout [31:0] Shift2Output;
+    inout [31:0] Mux1Output;
+    inout [31:0] Mux3Output;
+    inout [31:0] Mux4Output;
+    input [31:0] Mux4JumpInput;
+    inout [31:0] Mux5Output;
+    inout [31:0] ALU1Output;
+    inout [31:0] ALU2Output;
+    output [31:0] memReadData;
+    
+    integer a = 0;
+  
+  initial begin 
+    four = 3'h4;
+    address = 32'h00000000; // initialize the first address
+    
+    // here we set all inputs to zero at the begining and also set the modules to read, not write, for intial contents to be read
+        a = 0;
+        /*ReadReg1[4:0] <= a;
+        ReadReg2[4:0] <= a;
+        WriteReg[4:0] <= a;
+        WriteData[31:0] <= a;
+        RegWrite <= 0;
+        
+        Address[31:0] <= 0;
+        memWriteData[31:0] <= 0;*/
+  end
+  
+    //asign wires that need to be split or combined outside of modules
+    assign Mux4JumpInput[31:28] = PCAdderOutput[31:28];
+    assign Mux4JumpInput[27:0] = Shift1Output[27:0];
+    assign ReadReg1[4:0] = Instr[25:21];
+    assign ReadReg2[4:0] = Instr[20:16];
+    assign ReadReg3[4:0] = Instr[15:11];
+    
+  always@(*) //asign registers that must also be assigned outside of modules
+    begin
+        JumpAddress[25:0] = Instr[25:0];
+        Funct[5:0] = Instr[5:0];
+        Immediate[15:0] = Instr[15:0];
+        //WriteReg = 
+    end
+
+  //Intalize all modules, and wire them appropreately. This is a hotbed for simple mistakes, but I believe everything is wired properly.
+  
+  Clock #10 clock(clk);
+
+  PCUnit #10 pc(clk, PCUnitInput, PCUnitOutputPCAdder, PCUnitOutput); // initialize the PCUnit
+  
+  PCAdder #10 add(clk, PCUnitOutputPCAdder, PCAdderOutput, four); // initialize the PCAdder
+  
+  InstructionMemory #10 mem(clk, PCUnitOutput, Instr); //initialize the Instruction Memory
+  
+  Mux0 #10 mux0(WriteReg, RegDst, ReadReg2, ReadReg3); //initialize Mux0
+  
+  Mux #10 mux1(Mux1Output, ALUSrc, ReadData2, SignExtendOutput); //initialize Mux1
+  
+  ALU2 #10 alu2(clk, ALUControlOutput, ReadData1, Mux1Output, ALU2Output, Zero); // Initialize the second ALU
+  
+  ANDGate andGate(Branch,Zero, ANDOutput); // and gate to mux3
+  
+  DataMemory #10 dataMemory(clk,ALU2Output,ReadData2,memReadData,MemWrite,MemRead); //Initialize the Data Memory
+  
+  Mux #10 mux2(WriteData, MemtoReg, ALU2Output, memReadData); // Initialize mux2
+  
+  SignExtend #10 sign(clk, Immediate, SignExtendOutput); // initialize the SignExtend Module
+  
+  ShiftLeft2Jump #10 jumpShift(clk, JumpAddress, Shift1Output);
+  
+  ShiftLeft2 #10 signExtendShift(clk, SignExtendOutput, Shift2Output); // shift the sign extended value
+  
+  ALU1 #10 alu1(clk,PCAdderOutput, Shift2Output, ALU1Output);
+  
+  Mux #10 mux3(Mux3Output, ANDOutput, PCAdderOutput, ALU1Output);
+  
+  Mux #10 mux4(Mux4Output, Jump, Mux3Output, Mux4JumpInput);
+  
+  Mux #10 mux5(Mux5Output, JR, Mux4Output, ReadData1);
+  
+  Control #10 control(clk, Instr, RegDst, ALUSrc, MemToReg, RegWrite, MemRead, MemWrite, Branch, Jump, ALUOp);
+  
+  ALUControl #10 ALU(Funct, ALUOp, ALUControlOutput, JR);
+  
+  Registers #10 register(ReadReg1,ReadReg2,WriteReg,WriteData,RegWrite,clk,ReadData1,ReadData2);
+  
+  
+  
+  integer startup = 1;// prevents the initial zero instruction from interfering with the program
+  integer flag = 1; // this flag will be zero when a zero instruction is reached, signaling the end of the program. It should have been replaced by the termination syscall, but as that is not implemented, it cannot be relied upon, requiring the flag to remain.
+  integer i = 0; // this serves as an iterative element for future loops
+  //The following block serves to check for zero instructions and parse instruction types
+
+  //It is here that we should have checked for jumps and branches, and performed the PC incrementaions and return register sets that are needed to implement the final few instructions. Alsa, it could not be done in time.
+  always@(posedge clk) 
+    begin
+      if(startup == 1) begin // first we ignore the initial zero instruction before the instruction memory is loaded
+        startup = 0;
+        address <= Instr; 
+      end
+     
+      else begin // Here we check if the instruction loaded into address is all zeros
+        address <= Instr; 
+        for(i = 0; i < 32; i = i+1) begin
+          if(address[i] != 0)begin
+            flag = 0;   
+          end
+        end
+        
+        if(flag == 1) begin // if so, we end the simulation
+          $finish;
+        end
+    end
+  end
+
+//It should be noted, I estimate no more than a couple dozen lines of code, (including bug fixes), stand between this implemention and fully complete and correct one. I am deeply frustrated and saddened at my own failure, but am proud of my work nonetheless. I stayed up for 3 days to get this much done after I completed my final exam, and I feel that it is worth it.
+endmodule

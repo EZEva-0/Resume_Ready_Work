@@ -1,0 +1,805 @@
+/*
+There are two ALU modules in the diagram, one of which
+has a single output, one which has two.
+/*
+There are two ALU modules in the diagram, one of which
+has a single output, one which has two.
+I have named the 2 output ALU2, and the single output
+modules ALU1
+ALU1 is really just a simple adder.
+*/
+module ALU1(clock, ReadData1, MuxOutput, ALUResult);
+    input clock;
+    input [31:0] ReadData1;
+    input [31:0] MuxOutput;
+    output [31:0] ALUResult;
+
+    assign ALUResult = ReadData1+MuxOutput;
+    
+endmodule
+/*
+There are two ALU modules in the diagram, one of which
+has a single output, one which has two.
+I have named the 2 output ALU2, and the single output
+modules ALU1
+*/
+module ALU2(clock, ALUContolSignal, ReadData1, MuxOutput, ALUResult, Zero);
+    input clock;
+    input [4:0] ALUContolSignal;
+    input [31:0] ReadData1;
+    input [31:0] MuxOutput;
+    output reg [31:0] ALUResult;
+    output reg Zero; 
+    
+    reg [64:0] Result;
+    reg [31:0] HI; // used in the MFHI and MFLO commands only
+    reg [31:0] LO;
+    
+// in our case, ALU2 pushes a control signal back to the Control Module. (in the diagram this is the floating AND Gate, which I have chosen to create a "helper module" for) If the result of the operation is a zero, it pushes a 1, otherwise, it pushes a 0.
+    always @(posedge clock)
+    begin //Note, I am assuming that ReadData1 takes presedence, as it is labled above the Mux output in the Mips diagram. (this matters for division, for example)
+        case (ALUContolSignal) // the alu Control signal determines the operation conducted
+        5'b00000 : ALUResult <= ( $signed(ReadData1) +  $signed(MuxOutput) );       // Add, (signed numbers)
+        5'b00001 : ALUResult <= ( $signed(ReadData1) -  $signed(MuxOutput) );       // Subtract (also signed)
+        5'b00010 : begin
+            HI <= ($signed(ReadData1) /  $signed(MuxOutput));                       // Divide
+            LO <= ($signed(ReadData1) %  $signed(MuxOutput)); end
+        5'b00011 : ALUResult <= ( $signed(ReadData1) *  $signed(MuxOutput) );       // Mulitply (no HI/LO, meaning this is the MUL command)
+        5'b00100 : ALUResult <= (ReadData1 & MuxOutput);                            // AND
+        5'b00101 : ALUResult <= (ReadData1 | MuxOutput);                            // OR
+        5'b00110 : ALUResult <= (ReadData1 ^ MuxOutput);                            // XOR
+        5'b00111 : ALUResult <= !(ReadData1 | MuxOutput);                           // NOR
+        5'b01000 : ALUResult <= (ReadData1 << MuxOutput);                           // shift logical left (unsigned)
+        5'b01001 : ALUResult <= (ReadData1 >> MuxOutput);                           // shift right logical (unsigned)
+        5'b01010 : begin                                                            // set on less than (signed)
+            if(ReadData1 < MuxOutput)
+                ALUResult <= 1;
+            else
+                ALUResult <= 0;        end
+        5'b01100 : ALUResult <= ($signed(ReadData1) >>> $signed(MuxOutput));        // shift right arithmetic
+        5'b01101 : ALUResult <= LO;                                                 // MFLO
+        5'b01110 : ALUResult <= HI;                                                 // MFHI
+        5'b01111 :  begin                                                           // Syscall
+            if(ReadData1 == MuxOutput)
+                ALUResult <= 1;
+            else
+                ALUResult <= 0;        end
+        5'b10000 : begin                                                            //  Multiply (Hi and LO, this is the MULT command)
+        Result = ( $signed(ReadData1) *  $signed(MuxOutput) );
+            HI = Result[64:32];
+            LO = Result[31:0];         end
+        5'b10001 : ALUResult <= ( $signed(ReadData1) + $signed(MuxOutput) );        // addi (signed numbers)
+        5'b10010 : ALUResult <= ( (ReadData1) + (MuxOutput) );                      //addiu (unsigned)
+        //5'b11111 : ALUResult <= (PCCurrent + 4); // jr, pass the next instruction address to the 31 register
+        5'b10011 : Zero = ReadData1 == MuxOutput ? 1 : 0;                       //Beq (passes only a 1 or zero. This is sent to the ANDGate to branch)
+        5'b10011 : Zero = ReadData1 != MuxOutput ? 1 : 0;                       //Bne (passes only a 1 or zero)
+        5'b10100 : Zero = ReadData1 > 0 ? 1 : 0;                                //Branch greater than zero (passes only a 1 or zero)
+        5'b10101 : Zero = ReadData1 < 0 ? 1 : 0;                                //Branch less than zero (passes only a 1 or zero)
+        
+        5'b10110 : Zero = ReadData1 < 0 ? 1 : 0;                                //Load word
+        5'b10111 : Zero = ReadData1 < 0 ? 1 : 0;                                //store word
+
+default;//For Jump Commands, do nothing as they are not needed. The output is not read by the data memory, and is discarded, so we could pass any value we want, but leaving it unknown is also acceptable
+        endcase
+        
+        /*if(ALUResult == 0) // if the ALU output is zero, zero control signal is 1.
+            assign Zero = 1;
+        else
+            assign Zero = 0;*/
+    
+    end
+endmodule
+/*
+Note, Several changes to the ALU control unit have been made since the last interation. I have increased the size of the ALU control singal output, to accomidate more singals. This will allow me to implement more instructions. the ALUOutput reg has increased from 3 bits to 4. I have also changed the singal ordering, to make reading the operations easier. This has no affect on the operation of the ALU, as these changes were made on the ALU as well. (ex. the AND singal went from 000 to 000
+*/
+module ALUControl (FunctInput, ALUOpInput, ALUOutput, JR);
+
+  input wire [5:0] FunctInput;
+  input wire [3:0] ALUOpInput;
+  output reg [4:0] ALUOutput;
+  output reg JR = 0;   
+
+  always@*
+  begin
+    if(ALUOpInput == 4'b0000) //R-Type, check funct value
+    begin
+        if(FunctInput == 6'b100000) // add
+            ALUOutput = 00000;
+        else if(FunctInput == 6'b100100) // AND
+            ALUOutput = 00100;
+        else if(FunctInput == 6'b001000) begin // jr
+            ALUOutput = 10001; //add PC (immediate) to regiseter; addi
+	        JR = 1;
+	    end
+        else if(FunctInput == 6'b000010) // mul
+            ALUOutput = 00011;
+        else if(FunctInput == 6'b011000) // mult
+            ALUOutput = 10000;
+        else if(FunctInput == 6'b010000) // mfhi
+            ALUOutput = 01110;
+        else if(FunctInput == 6'b010010) // mflo
+            ALUOutput = 01101;
+        else if(FunctInput == 6'b100111) // nor
+            ALUOutput = 00111;
+        else if(FunctInput == 6'b100101) // or
+            ALUOutput = 00101;
+        else if(FunctInput == 6'b000000) // sll
+            ALUOutput = 01000;
+        else if(FunctInput == 6'b101010) // slt
+            ALUOutput = 01010;
+        else if(FunctInput == 6'b000011) // sra
+            ALUOutput = 01100;
+        else if(FunctInput == 6'b000010) // srl
+            ALUOutput = 01001;
+        else if(FunctInput == 6'b100010) // sub
+            ALUOutput = 00001;
+        else if(FunctInput == 6'b100110) // xor
+            ALUOutput = 00110;
+        else if(FunctInput == 6'b001100) // syscall
+            ALUOutput = 01111;
+        else if(FunctInput == 6'b011010) // divide
+            ALUOutput = 00010;
+    end
+    else if(ALUOpInput == 4'b0001) // special r type, force addition
+    begin
+        ALUOutput = 00000;
+    end
+    if(ALUOpInput == 4'b0010) //Jump
+    begin
+        //ALU not used
+    end
+    if(ALUOpInput == 4'b0011) //Jump and Link
+    begin
+        ALUOutput = 10001; //ALU used to add an address, (PC+4) to register, addi
+    end
+    else if(ALUOpInput == 4'b0100) // Load Word
+    begin
+    	    ALUOutput = 10001; //add an immediate to a register, addi
+    end
+    else if(ALUOpInput == 4'b0101) // Store word
+    begin
+    	    ALUOutput = 10001; //add and immediate to a register addi
+    end
+    else if(ALUOpInput == 4'b0110) // Branch on Equal
+    begin
+    	    ALUOutput = 10011;
+    end
+    else if(ALUOpInput == 4'b0111) // Branch Not Equal
+    begin
+    	    ALUOutput = 10011; 
+    end
+    else if(ALUOpInput == 4'b1000) // Branch on Greater than Zero
+    begin
+    	    ALUOutput = 10100;
+    end
+    else if(ALUOpInput == 4'b1001) // Branch less than zero
+    begin
+    	    ALUOutput = 10101;
+    end
+    else if(ALUOpInput == 4'b1010) // I Type - Add Immediate
+    begin
+    	    ALUOutput = 10001; 
+    end
+    else if(ALUOpInput == 4'b1011) // I Type - Add Immediate Unsigned
+    begin
+    	    ALUOutput = 10010;
+    end
+    else if(ALUOpInput == 4'b1100) // I Type - Generic
+    begin
+    	    ALUOutput = 0000; //add two registers
+    end
+    else 
+        JR = 0;
+    
+  end
+endmodule
+
+/*
+In the mips diagram, there is a floating and gate which takes in two inputs, one from the Control module, and one from ALU2. Instead of lumping this hardware into the Mux associated, or in the ALU or control modules, (although it probably could go into the Control module), I have chosen to create a "helper module". It 'could' be handled by the testbench, but I personally perfer to limit the amount of hardware needed in the testbench. If possible, I want to limit the testbench to just startup, initalization, and printing to screen. 
+In addition, this is a convient place to put branching logic, so I have expanded the module for this function.
+*/
+module ANDGate(Branch, Zero, output1);
+    input Branch, Zero;
+    output output1;
+    assign output1 = (Branch && Zero);
+endmodule
+module Clock (clock);
+  parameter LO = 10;
+  parameter HI = 10;
+  output reg clock;
+  
+  initial 
+    clock = 0;
+    always
+        begin
+            #LO clock = ~clock;
+            #HI clock = ~clock;
+        end
+endmodule
+/* 
+ * The Control Module takes instruction memory output as input, and outputs control signals.
+*/
+module Control(clock, InstructionMemoryInput, RegDst, ALUSrc, MemToReg, RegWrite, MemRead, MemWrite, Branch, Jump, ALUOp);
+
+  //Control signal and varible initialization
+
+  input clock;
+  input [31:0] InstructionMemoryInput;
+  output reg RegDst; 
+  output reg ALUSrc; 
+  output reg MemToReg; 
+  output reg RegWrite; 
+  output reg MemRead; 
+  output reg MemWrite; 
+  output reg Branch; 
+  output reg Jump; 
+  output reg [3:0] ALUOp; 
+  
+  // we pull out the opcode from the Instruction Memory input
+  reg [5:0] OpCode;
+  
+  always @* begin
+  OpCode[5:0] = InstructionMemoryInput[31:26];
+  //Now we check the opCode for specific values, and assign control signals accordingly
+  if(OpCode == 6'b000000) // R type
+    begin
+    RegDst = 1;
+    ALUSrc = 0;
+    MemToReg = 0;
+    RegWrite = 1;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 0;
+    Jump = 0;
+    ALUOp = 0000; // generic, will be overridden by ALU Control
+    end
+  else if(OpCode == 6'b011100) //R type - Special2 OpCode
+    begin
+    RegDst = 1;
+    ALUSrc = 0;
+    MemToReg = 0;
+    RegWrite = 1;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 0;
+    Jump = 0;
+    ALUOp = 0001;
+    end
+  else if(OpCode == 6'b000010) // J Type - Jump
+    begin
+    RegDst = 0; //(x)
+    ALUSrc = 0; //(x)
+    MemToReg = 0; //(x)
+    RegWrite = 0;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 0;
+    Jump = 1;
+    ALUOp = 0010; //Denotes an (x) value
+    end
+  else if(OpCode == 6'b000011) // J Type - Jump and Link
+    begin
+    RegDst = 0; //(x)
+    ALUSrc = 0; //(x)
+    MemToReg = 0; //(x)
+    RegWrite = 0;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 0;
+    Jump = 1;
+    ALUOp = 0011; //Denotes an (x) value
+    
+    end
+  else if(OpCode == 6'b100011) // I Type - Load Word
+    begin
+    RegDst = 0; 
+    ALUSrc = 1; 
+    MemToReg = 1; 
+    RegWrite = 1;
+    MemRead = 1;
+    MemWrite = 0;
+    Branch = 0;
+    Jump = 0;
+    ALUOp = 0100;
+    end  
+  else if(OpCode == 6'b101011) // I Type - Store Word
+    begin
+    RegDst = 0; //(x)
+    ALUSrc = 1; 
+    MemToReg = 1; //(x)
+    RegWrite = 0;
+    MemRead = 0;
+    MemWrite = 1;
+    Branch = 0;
+    Jump = 0;
+    ALUOp = 0101;
+    end  
+  else if(OpCode == 6'b000100) // I Type - Branch on Equal
+    begin
+    RegDst = 0; //(x) 
+    ALUSrc = 0; 
+    MemToReg = 0; //(x) 
+    RegWrite = 0;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 1;
+    Jump = 0;
+    ALUOp = 0110;
+    end   
+  else if(OpCode == 6'b000101) // I Type - Branch not Equal
+    begin
+    RegDst = 0; //(x) 
+    ALUSrc = 0; 
+    MemToReg = 0; //(x) 
+    RegWrite = 0;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 1;
+    Jump = 0;
+    ALUOp = 0111;
+    end  
+  else if(OpCode == 6'b000111) // I Type - Branch on Greater than Zero
+    begin
+    RegDst = 0; //(x) 
+    ALUSrc = 0; 
+    MemToReg = 0; //(x) 
+    RegWrite = 0;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 1;
+    Jump = 0;
+    ALUOp = 1000;
+    end 
+  else if(OpCode == 6'b000110) // I Type - Branch on Less than or Equal to Zero
+    begin
+    RegDst = 0; //(x) 
+    ALUSrc = 0; 
+    MemToReg = 0; //(x) 
+    RegWrite = 0;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 1;
+    Jump = 0;
+    ALUOp = 1001;
+    end    
+  else if(OpCode == 6'b001000) // I Type - Add Immediate
+    begin
+    RegDst = 0; 
+    ALUSrc = 1; 
+    MemToReg = 0; 
+    RegWrite = 1;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 0;
+    Jump = 0;
+    ALUOp = 1010;
+    end
+  else if(OpCode == 6'b001001) // I Type - Add Immediate Unsigned
+    begin
+    RegDst = 0; 
+    ALUSrc = 1; 
+    MemToReg = 0; 
+    RegWrite = 1;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 0;
+    Jump = 0;
+    ALUOp = 1011;
+    end 
+  else  // I Type - Generic
+    begin
+    RegDst = 0; 
+    ALUSrc = 1; 
+    MemToReg = 0; 
+    RegWrite = 1;
+    MemRead = 0;
+    MemWrite = 0;
+    Branch = 0;
+    Jump = 0;
+    ALUOp = 1100;
+    end    
+  end
+endmodule
+/*
+* Module: DataMemory - The Mips Data Memory Module, used for data storage
+* Author: Evan Branco.
+* Ports: Inputs: Address, MemWriteData, memReadData, memWrite, MemRead, Clock
+           used to detemined which memory address is being read and written to, as well as the clock for syncronization
+            MemRead and memWrite are control signals
+        Outputs: memReadData,
+            The contents of the memory address that is to be read
+*/
+module DataMemory (Clock,Address,memWriteData,memReadData,memWrite,memRead);  
+input Clock;
+input[31:0] Address;
+input[31:0] memWriteData;
+output reg [31:0] memReadData;
+input memWrite;
+input memRead;
+      //mips memory is bit addressable - meaning 8 bit memory.
+      //in addittion, mips memory allows for 32 address lines. Thus, 2^32 x 8 Ram, or 4 gb of RAM memory However, for easy of display and testing, our memory is much smaller
+    integer i;
+    integer o;
+    reg [31:0] ram [8192 : 'h3fff]; // for the project we require memory big enough for 0x2000 to 0x3fff
+    //doing them both as hex in this format leads to an error (I'm too lazy to fix it), so I just conveted the first to its bit equivalent
+    initial begin  //at startup, initalize memory to all zeros
+        for(i=8192;i<'h3fff;i=i+1)begin
+            ram[i] <= 32'h0; 
+        end
+	$readmemh("data.txt", ram);
+    end  
+	/*initial //after inializing the memory, attempt to fill using a given datafile.
+    begin  //this is used to fill the memory at the start of the program
+	    $readmemh("test_data.txt",ram);
+	end*/
+    //note, this is comment-ed out, and is not used. This is a reminant of testing
+    always @(posedge Clock) begin  //write to memory
+        if (memWrite == 1) begin  //if mem write is 1
+            ram[Address/4] <= memWriteData;  //place memData into memory at address location
+        end  //else, do not write
+      //if memWrite is not one, check for memRead
+        else if(memRead == 1) begin//if memRead is selected, pass the instruciton at Address to memReadData
+                memReadData <= ram[Address/4];
+        end
+        else begin// if neither are slected, read nothing, write nothing. (pass zero to memReadData)
+            memReadData <= 32'h0;
+        end
+    end
+ endmodule 
+module InstructionMemory(clock, PCUnitInput, InstructionOutput); 
+  input clock;
+  
+  input[31:0]  PCUnitInput;
+  //Instruction address input
+  
+  output[31:0] InstructionOutput;
+  //Instruction output, the data contained in memory at location PCUnitInput  
+  
+  //Note to self, ask professor what the exact size should be, as you may be one to two elements off the mark, you may need the total to be 2049 or 2048.  
+  
+  reg [31:0] mem[0:2047]; // 0 to 2047 = 2048 effective memory elements of size 32 bit
+  // Instruction Memory Space, there are 0x2000 bytes, or 8192 bytes. Dividing by 4 to determine the number of instruction words we have, (as each instruction word is 4 bytes long, 8 hex characters, 32 bits), we get 2048. We subtract one to account for the zero address, leaving us 2047. 
+  
+  integer i;    
+  initial begin
+    begin for(i = 0; i < 2049; i = i+1)
+      mem[i] = 32'h00000000;    
+    end
+    $readmemh("code.txt", mem);
+    /*begin for(i = 0; i < 2049; i = i+1)
+         $display ("Mem[%d]=%h",i,mem[i]); end*/
+  end
+
+     //The above code will intialize the the instruction memory with all zero instructions to begin execution
+  
+  assign InstructionOutput = mem[PCUnitInput/4]; // we convert the hex address to an element number by dividing by 4, ex; address 00000004 is the 1st element, thus we divide by 4.
+  
+  //This passes to the Output the instruction in memory located at address PCUnitInput 
+  endmodule
+/*
+This mux design was adapted from given code by the professor. It uses a single control singal to determin which input to pass. It is satisfactory for all 5 multiplexers in the design
+*/
+module Mux(Out, Sel, In1, In2);
+	output reg [31:0] Out;
+	input [31:0] In1, In2;
+	input Sel; // Selector signal
+	
+	always @(Sel, In1, In2)
+	case (Sel) // a 2 -> 1 multiplexor
+		0: Out <= In1;
+		1: Out <= In2;
+	endcase
+endmodule 
+/*
+This mux design was adapted from given code by the professor. It uses a single control singal to determin which input to pass. This specifc mux is sized to sit between instruction memory and Register
+*/
+module Mux0(Out, Sel, In1, In2);
+	output reg [4:0] Out;
+	input [4:0] In1, In2;
+	input Sel; // Selector signal
+	
+	always @(Sel, In1, In2)
+	case (Sel) // a 2 -> 1 multiplexor
+		0: Out <= In1;
+		1: Out <= In2;
+	endcase
+endmodule
+module PCAdder(clock, PCUnitInput, PCAdderOutput, four);
+  input clock;
+  input [31:0] PCUnitInput;
+  input [31:0] four;
+  output[31:0] PCAdderOutput;
+  
+  assign PCAdderOutput = PCUnitInput + four;
+endmodule
+module PCUnit(clock, PCAdderInput, PCOutput, InstructionMemoryOutput);
+  input clock;
+
+  input [31:0] PCAdderInput;            
+  // declaring an input wire of 32 bit length, or 4 bytes, to take an instruction address from the PC Adder
+
+  output [31:0] PCOutput;         
+  // output wire to push the PC Unit address to the PCAdder
+
+  output [31:0] InstructionMemoryOutput;        
+  //output wire to push the PC Unit address to Instruction Memory
+  
+  reg[31:0] address;  
+  initial address = 32'h00000000;
+  //Register to store the the Input and output address, begins at zero address
+  
+  
+  always@(posedge clock) // clock loop to regular register access
+    begin
+      address <= PCAdderInput; // we put the pc address into the register
+    end
+  
+  assign PCOutput = address; 
+  assign InstructionMemoryOutput = address;
+  //finally, we assign the output wires their value, recieved from register
+  
+endmodule
+/*
+* Module: Registers - the Mips Register File Module, used for high speed instruction operations
+* Author: Evan Branco.
+* Ports: Inputs: ReadReg1, ReagReg2, WriteReg, Clock
+            used to detemined which registers are being read and written to, as well as the clock for syncronization
+        Outputs: ReadData1, ReadData2
+            The contents of the registers that are to be read
+*/
+module Registers(ReadReg1,ReadReg2,WriteReg,WriteData,RegWrite,Clock,ReadData1,ReadData2);
+    input [4:0] ReadReg1, ReadReg2, WriteReg;
+	input [31:0] WriteData;
+	input RegWrite,Clock;
+	
+    output reg [31:0] ReadData1, ReadData2;
+    
+    reg [31:0] Registers [0:31];
+    //mips register memory has 32 register locations, not all are usable, but many are.
+    //those that are used by mips instructions will need to be iniatilzed to zero
+    //for example, 26 and 27 are reserved for the kernal, and are not used, thus we do not initialize them at all
+    
+    initial begin
+		Registers[0] <= 32'h0;
+		//reserved registers
+		Registers[8] <= 32'h0;
+		//reserved registers
+		Registers[9] <= 32'h0;
+		Registers[10] <= 32'h0;
+		Registers[11] <= 32'h0;
+		Registers[12] <= 32'h0;
+		Registers[13] <= 32'h0;
+		Registers[14] <= 32'h0;
+		Registers[15] <= 32'h0;
+		Registers[16] <= 32'h0;
+		Registers[17] <= 32'h0;
+		Registers[18] <= 32'h0;
+		Registers[19] <= 32'h0;
+		Registers[20] <= 32'h0;
+		Registers[21] <= 32'h0;
+		Registers[22] <= 32'h0;
+		Registers[23] <= 32'h0;
+		Registers[24] <= 32'h0;
+		Registers[25] <= 32'h0;
+		//reserved regsiters
+		Registers[29] <= 32'h0; //this needs to point to the start of memory, so it should be given a specific value. In our case, memory starts at hex value 2000, but it is arbitrary, wherever we decide memory should start. For now, it will start at zero
+		//reserved Registers
+		Registers[31] <= 32'b0;
+	end
+    //the module is syncronized by a clock
+    always @(posedge Clock)
+	begin
+		//if we have a regWrite value of 1, we need to place data into the specified register
+		if (RegWrite == 1) 
+		begin
+		if(WriteReg != 0) // we cannot write to the zero register, it is ALWAYS zero
+			Registers[WriteReg] <= WriteData;
+		end
+	end
+	//otherwise, regWrite is zero, and thus we need not write to registers.
+	
+	//register output will occur on negedge instead of posedge to ensure input stablilty
+	always @(negedge Clock)
+	begin
+	    //Now we need to pass read register data to the outputs for the rest of the cycle. 
+	    ReadData1 <= Registers[ReadReg1]; //here we place our read registers into our output registers
+	    ReadData2 <= Registers[ReadReg2];
+	end
+endmodule
+/*
+This is the shift Left module, while a full module
+is likely not needed, and this operation could be
+done at the start of nessesary modules, they are
+clearly unique, full modules in the mips diagram.
+*/
+module ShiftLeft2 (clock, shiftValue, shiftedValue); 
+    input clock;
+    input [31:0] shiftValue;
+    output reg [31:0] shiftedValue;
+    always @(posedge clock)begin
+        shiftedValue <= shiftValue << 2; 
+    end
+    //unused, display for debugging
+    /*always@(negedge clock)begin
+        $display("%b",shiftValue);
+        $display("%b",shiftedValue);
+    end*/
+endmodule
+/*
+This is the shift Left module, while a full module
+is likely not needed, and this operation could be
+done at the start of nessesary modules, they are
+clearly unique, full modules in the mips diagram.
+This particular version has differently sized input/ output ports to accomidate the mips design. It is functionally identical
+*/
+module ShiftLeft2Jump (clock, shiftValue, shiftedValue); 
+    input clock;
+    input [25:0] shiftValue;
+    output reg [27:0] shiftedValue;
+    always @(posedge clock)begin
+        shiftedValue <= shiftValue << 2; 
+    end
+    //unused, display for debugging
+    /*always@(negedge clock)begin
+        $display("%b",shiftValue);
+        $display("%b",shiftedValue);
+    end*/
+endmodule
+/*
+This module extends a 16 bit number to a 32 bit number, by appending 1's or zero's to the frount of the number.
+This is a defined module in the mips diagram, so it is a full module here.
+It is clocked to ensure correct timing with other clocked modules, though I suspect that is not strictly nessesary.
+*/
+module SignExtend(clock, Extend, Extended);
+input clock;
+input [15:0] Extend; // 16-bit input
+output reg [31:0] Extended; // 32-bit output
+  always @(posedge clock) begin
+ if (Extend[15]) 
+    Extended[31:16] <= 16'b1111111111111111;
+else 
+    Extended[31:16] <= 16'b0000000000000000; 
+end
+endmodule
+//-------------------------------------------------------------------------------------------------------------
+
+module testBench();  
+
+    output wire clk; //initalize clock wires
+    //initalize wires for PCUnit, adder, and Instrcution memory
+    inout [31:0] PCUnitOutputPCAdder;
+    inout [31:0] PCUnitInput;
+    inout [31:0] PCUnitOutput;
+    inout [31:0] PCAdderOutput;
+    output[31:0] Instr;
+    
+    reg [5:0] Funct;
+    reg [15:0] Immediate;
+    reg [25:0] JumpAddress;
+    
+    reg [31:0] four;
+    reg [31:0] address;
+    wire [1:0] ALUOp;
+    wire [4:0] ALUControlOutput;
+    wire JR;
+  
+    // initialize register and memory wires
+    inout  [4:0] ReadReg1, ReadReg2, ReadReg3, WriteReg;
+    inout  [31:0] WriteData;
+    inout  RegWrite;
+    output [31:0] ReadData1;
+    output  [31:0] ReadData2;
+    
+    
+    inout [31:0] SignExtendOutput;
+    inout [27:0] Shift1Output;
+    inout [31:0] Shift2Output;
+    inout [31:0] Mux1Output;
+    inout [31:0] Mux3Output;
+    inout [31:0] Mux4Output;
+    input [31:0] Mux4JumpInput;
+    inout [31:0] Mux5Output;
+    inout [31:0] ALU1Output;
+    inout [31:0] ALU2Output;
+    output [31:0] memReadData;
+    
+    integer a = 0;
+  
+  initial begin 
+    four = 3'h4;
+    address = 32'h00000000; // initialize the first address
+    
+    // here we set all inputs to zero at the begining and also set the modules to read, not write, to print the intial contents
+        a = 0;
+        /*ReadReg1[4:0] <= a;
+        ReadReg2[4:0] <= a;
+        WriteReg[4:0] <= a;
+        WriteData[31:0] <= a;
+        RegWrite <= 0;
+        
+        Address[31:0] <= 0;
+        memWriteData[31:0] <= 0;*/
+  end
+  
+    //asign wires 
+    assign Mux4JumpInput[31:28] = PCAdderOutput[31:28];
+    assign Mux4JumpInput[27:0] = Shift1Output[27:0];
+    assign ReadReg1[4:0] = Instr[25:21];
+    assign ReadReg2[4:0] = Instr[20:16];
+    assign ReadReg3[4:0] = Instr[15:11];
+    
+  always@(*) //asign registers
+    begin
+        JumpAddress[25:0] = Instr[25:0];
+        Funct[5:0] = Instr[5:0];
+        Immediate[15:0] = Instr[15:0];
+        //WriteReg = 
+    end
+
+  Clock #10 clock(clk);
+
+  PCUnit #10 pc(clk, PCUnitInput, PCUnitOutputPCAdder, PCUnitOutput); // initialize the PCUnit
+  
+  PCAdder #10 add(clk, PCUnitOutputPCAdder, PCAdderOutput, four); // initialize the PCAdder
+  
+  InstructionMemory #10 mem(clk, PCUnitOutput, Instr); //initialize the Instruction Memory
+  
+  Mux0 #10 mux0(WriteReg, RegDst, ReadReg2, ReadReg3); //initialize Mux0
+  
+  Mux #10 mux1(Mux1Output, ALUSrc, ReadData2, SignExtendOutput); //initialize Mux1
+  
+  ALU2 #10 alu2(clk, ALUControlOutput, ReadData1, Mux1Output, ALU2Output, Zero); // Initialize the second ALU
+  
+  ANDGate andGate(Branch,Zero, ANDOutput); // and gate to mux3
+  
+  DataMemory #10 dataMemory(clk,ALU2Output,ReadData2,memReadData,MemWrite,MemRead); //Initialize the Data Memory
+  
+  Mux #10 mux2(WriteData, MemtoReg, ALU2Output, memReadData); // Initialize mux2
+  
+  SignExtend #10 sign(clk, Immediate, SignExtendOutput); // initialize the SignExtend Module
+  
+  ShiftLeft2Jump #10 jumpShift(clk, JumpAddress, Shift1Output);
+  
+  ShiftLeft2 #10 signExtendShift(clk, SignExtendOutput, Shift2Output); // shift the sign extended value
+  
+  ALU1 #10 alu1(clk,PCAdderOutput, Shift2Output, ALU1Output);
+  
+  Mux #10 mux3(Mux3Output, ANDOutput, PCAdderOutput, ALU1Output);
+  
+  Mux #10 mux4(Mux4Output, Jump, Mux3Output, Mux4JumpInput);
+  
+  Mux #10 mux5(Mux5Output, JR, Mux4Output, ReadData1);
+  
+  Control #10 control(clk, Instr, RegDst, ALUSrc, MemToReg, RegWrite, MemRead, MemWrite, Branch, Jump, ALUOp);
+  
+  ALUControl #10 ALU(Funct, ALUOp, ALUControlOutput, JR);
+  
+  Registers #10 register(ReadReg1,ReadReg2,WriteReg,WriteData,RegWrite,clk,ReadData1,ReadData2);
+  
+  
+  
+  integer startup = 1;// prevents the initail zero instruction from interfering with the program
+  integer flag = 1; // this flag will be zero when a zero instruction is reached, signaling the end of the program
+  integer i = 0; // this serves as an iterative element for future loops
+  //The following block serves to check for zero instructions and parse instruction types
+  always@(posedge clk) 
+    begin
+      if(startup == 1) begin // first we ignore the initial zero instruction before the instruction memory is loaded
+        startup = 0;
+        address <= Instr; 
+      end
+     
+      else begin // Here we check if the instruction loaded into address is all zeros
+        address <= Instr; 
+        for(i = 0; i < 32; i = i+1) begin
+          if(address[i] != 0)begin
+            flag = 0;   
+          end
+        end
+        
+        if(flag == 1) begin // if so, we end the simulation
+          $finish;
+        end
+    end
+  end
+endmodule
