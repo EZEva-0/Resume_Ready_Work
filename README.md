@@ -11,8 +11,7 @@ The Folder Titled MIPS_Finite_State_Machine contains Verilog Hardware Descriptio
 This project was very difficult, as it required programming in a hardware description language, which behaves very differently from imperative programming languages. 
 Still, it was an enjoyable, if not entirely successful experience.
 
-Don't forget to check out the repository entitled 3354-git! This was an assignment I completed in a Software engineering course. I use git in a Linux environment to push and merge.
-changes to source code. I am still lacking experience, so if I made some mistakes or did not conform to your firms change policies, I'm excited to learn.
+Don't forget to check out the repository entitled 3354-git! This was an assignment I completed in a Software engineering course. I used git in a Linux environment to push and merge changes to source code. I am still lacking experience, so if I made some mistakes or did not conform to your firm's change policies, I'm excited to learn.
 
 I hope to add to this repository with programming projects and code that more accurately conveys my skill set, as I'm currently working on a learning scripting languages. 
 Stay tuned!
