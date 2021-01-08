@@ -1,0 +1,14 @@
+Evan Jon Branco
+EJB180000
+CS 2336.501
+
+Project 1
+
+Howdy! This is the Project 1 documentation and run guide for the Ezrah pchat bot.
+
+In order to run the chat bot, run the MyBotMain.java class in a java ide, then go to freenode.net. Once there, login with any nickname (Except Ezrah_bot), leave the password field empty, and select #Ezrah for the channel name. This is the channel the chatbot selects. Once there, test the bot! In addition, it is recommended that you run the MyBotMain.java after you are logged in, as the startup messages from the bot, providing basic guidance, only occur once the bot connects. If you miss these intial instructions, cit may be difficult to discover what functionaliity the bot has.
+If you are ever stuck, simply type in 'help'.
+
+Thank you so much for taking the time to read this, and I wish you a safe day, what with the Coivd-19 hubabaloo. 
+
+-Evan Branco
