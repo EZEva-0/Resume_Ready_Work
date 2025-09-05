@@ -1,0 +1,11 @@
+patient_id,ssn,dob,gender,phone_number,emergency_contact,address,email,medical_history,billing_info,full_name,insurance_id
+1,555-34-8907,1955-04-12,Male,(449)-858-4937,(239)-921-8353,6029 Sociis St.,HenryBarnes@gmail.edu,"Hypertension- adnnual check-ups",Visa ending in 4821,Henry Barnes,1
+2,555-55-5555,1989-07-01,Male,(581)-222-1816,(253)-926-3848,3375 Integer Ave,AdisonOwens@hotmail.edu,"Asthma, seasonal allergies",Mastercard ending in 1910,Adison Owens,2
+3,555-34-4545,1990-07-22,Female,(730) 352-7743,(301)-869-2076,9741 At Ave,FlorrieRoss@aol.edu,"No known conditions",Amex ending in 0143,Florrie Ross,3
+4,555-12-3456,2000-09-10,Male,(677)-606-9227,(449)-534-4101,3905 Aliquet. Av.,NedWatson@yahoo.edu,"Diabetes Type 2, cholesterol management",Visa ending in 7084,Ned Watson,4
+5,555-35-3434,1999-07-07,Female,(388)-854-2947,(624)-520-7910,4257 Ornare Street,KelseyCameron@gmail.edu,"Migraine history, anxiety",Discover ending in 1192,Kelsey Cameron,5
+6,555-90-4578,2001-08-09,Male,(306) 786-3793,(422)-955-2675,Ap #884-267 Elementum Road,BlakeAdams@gmail.edu,"High blood pressure, regular medication",Mastercard ending in 3628,Blake Adams,6
+7,555-00-3167,1988-01-02,Female,(466) 571-4696,(783)-512-3339,Ap #132-1136 Cursus Rd.,AdeleClark@hotmail.edu,"Allergic to penicillin, general wellness",Visa ending in 2274,Adele Clark,7
+8,555-99-9999,1966-03-08,Male,(763)-517-9855,(714)-613-5657,Ap #492-3187 Ultricies Street,FrederickDavis@yahoo.edu,"Arthritis, physical therapy sessions",Amex ending in 5503,Frederick Davis,8
+9,555-88-4444,2006-02-11,Female,(221)-388-7612,(413)-783-5425,Ap #179-7221 Venenatis St.,MichelleHarper@gmail.edu,"No known allergies, previous surgery in 2022",Discover ending in 7880,Michelle Harper,9
+10,555-94-5682,1980-12-05,Female,(580) 564-4723,(721) 228-5165,2562 Feugiat Av.,CherrySullivan@aol.edu,"Prenatal care, iron deficiency",Visa ending in 9931,Cherry Sullivan,10

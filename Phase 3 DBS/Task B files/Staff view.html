@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - Patients & Calendar</title>
+    <link rel="stylesheet" href="staff_style.css">
+</head>
+<body>
+
+    <h1>Staff Dashboard</h1>
+
+    <div class="container">
+
+        <!-- Patient List Panel Styled as a .box -->
+        <div class="box patient-list-panel">
+            <h2>Current Patients</h2>
+            <ul>
+                <!-- Patient 1 Entry -->
+                <li data-patient-id="p1">
+                    <div class="patient-summary">
+                        <span>Name: John Doe</span> |
+                        <span>Insurance: ABC Health</span> |
+                        <span>Next Appt: <span class="next-appointment-display">Loading...</span></span>
+                    </div>
+                    <details>
+                        <summary class="details-header">View/Edit Patient Details</summary>
+                        <!-- Patient Attributes Section -->
+                        <div class="details-content">
+                            <h3>Patient Attributes</h3>
+                            <form class="staff-edit-form">
+                                <label>Full Name:<input type="text" name="p1_name" value="Johnathan Doe" readonly></label>
+                                <label>Date of Birth:<input type="date" name="p1_dob" value="1985-03-15" readonly></label>
+                                <label>Phone:<input type="tel" name="p1_phone" value="555-123-4567" readonly></label>
+                                <label>Emergency Contact:<input type="tel" name="p1_emergency_contact" value="555-111-2222" readonly></label>
+                                <label>Insurance Provider:<input type="text" name="p1_insurance" value="ABC Health" readonly></label>
+                                <label>Policy Number:<input type="text" name="p1_policy" value="XYZ123456789" readonly></label>
+                                <label>Address:<textarea name="p1_address" readonly>123 Main St, Anytown, USA</textarea></label>
+                                <label>Medical Notes:<textarea name="p1_notes" readonly>Patient has pollen allergy.</textarea></label>
+
+                                <p class="permission-note"><em>(Attribute editing enabled for authorized staff only)</em></p>
+                                <!-- Add Edit/Save Buttons -->
+                                <button type="button" class="edit-btn">Update Info</button>
+                                <button type="submit" class="save-btn" style="display:none;">Save Changes</button>
+                            </form>
+                        </div>
+                        <!-- Appointment lists -->
+                         <div class="details-content" style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                             <details>
+                                <summary class="details-header-small">View Patient Appointment History (List)</summary>
+                                <ul class="appointment-list-fallback-patient">
+                                </ul>
+                            </details>
+                         </div>
+                    </details>
+                </li>
+
+                <hr>
+
+                <!-- Patient 2 Entry -->
+                <li data-patient-id="p2">
+                     <div class="patient-summary">
+                        <span>Name: Jane Smith</span> |
+                        <span>Insurance: XYZ Insurance</span> |
+                        <span>Next Appt: <span class="next-appointment-display">Loading...</span></span>
+                    </div>
+                     <details>
+                        <summary class="details-header">View/Edit Patient Details</summary>
+                        <!-- Patient Attributes Section -->
+                        <div class="details-content">
+                            <h3>Patient Attributes</h3>
+                            <form class="staff-edit-form">
+                               <label>Full Name:<input type="text" name="p2_name" value="Jane A. Smith" readonly></label>
+                                <label>Date of Birth:<input type="date" name="p2_dob" value="1992-07-22" readonly></label>
+                                <label>Phone:<input type="tel" name="p2_phone" value="555-987-6543" readonly></label>
+                                <label>Emergency Contact:<input type="tel" name="p2_emergency_contact" value="555-333-4444" readonly></label>
+                                <label>Insurance Provider:<input type="text" name="p2_insurance" value="XYZ Insurance" readonly></label>
+                                <label>Policy Number:<input type="text" name="p2_policy" value="QWE987654321" readonly></label>
+                                <label>Address:<textarea name="p2_address" readonly>456 Oak Ave, Anytown, USA</textarea></label>
+                                <label>Medical Notes:<textarea name="p2_notes" readonly>No known allergies.</textarea></label>
+
+                                <p class="permission-note"><em>(Attribute editing enabled for authorized staff only)</em></p>
+                                <!-- Add Edit/Save Buttons -->
+                                <button type="button" class="edit-btn">Update Info</button>
+                                <button type="submit" class="save-btn" style="display:none;">Save Changes</button>
+                            </form>
+                        </div>
+                         <!-- Appointment lists  -->
+                         <div class="details-content" style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                            <details>
+                                <summary class="details-header-small">View Patient Appointment History (List)</summary>
+                                <ul class="appointment-list-fallback-patient">
+                                </ul>
+                            </details>
+                         </div>
+                    </details>
+                </li>
+
+            </ul>
+        </div>
+
+        <!-- Calendar Panel - Styled as a .box -->
+        <div class="box calendar-panel">
+            <h2>Staff Calendar</h2>
+            <div class="calendar-view"> 
+                 <div class="calendar-navigation">
+                    <button class="nav-btn prev-month">< Prev</button>
+                    <span class="month-year">Month Year</span>
+                    <button class="nav-btn next-month">Next ></button>
+                </div>
+                <table id="staff-calendar-table"> 
+                    <thead>
+                        <tr>
+                            <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staff-calendar-body">
+                         <tr><td colspan="7">Loading Calendar...</td></tr>
+                    </tbody>
+                </table>
+                <p class="permission-note" style="text-align: center; margin-top:10px;">
+                    <i>Clicking appointment prompts editing (authorized staff).</i>
+                </p>
+            </div>
+        </div>
+
+    </div> 
+
+
+    <script src="staff_script.js"></script>
+</body>
+</html>
