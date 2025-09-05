@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f9fc;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      margin-top: 40px;
+    }
+    .box {
+      flex: 1;
+      max-width: 400px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: #ffffff;
+    }
+    .box h2 {
+      margin-top: 0;
+      text-align: center;
+      color: #007BFF;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      width: 100%;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Welcome to the Portal</h1>
+  <div class="container">
+    <div class="box">
+      <h2>Patient Login</h2>
+      <form>
+        <label>Username:
+          <input type="text" name="patient_username" placeholder="Enter Patient ID or Email" id="Email">
+        </label>
+        <label>Password:
+          <input type="password" name="patient_password" placeholder="Enter Password" id="Patient_Pass">
+        </label>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+
+    <div class="box">
+      <h2>Staff Login</h2>
+      <form>
+        <label>Username:
+          <input type="text" name="staff_username" placeholder="Enter Staff ID or Email">
+        </label>
+        <label>Password:
+          <input type="password" name="staff_password" placeholder="Enter Password">
+        </label>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

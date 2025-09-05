@@ -1,0 +1,307 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f8f9fa; 
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.container {
+    display: flex;
+    gap: 30px; 
+    align-items: flex-start; 
+}
+
+.box {
+    flex: 1;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f4f9fc; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+}
+
+.box h2 {
+    margin-top: 0;
+    color: #0056b3; 
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+.box h3 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.patient-list-panel {
+    flex-basis: 55%;
+}
+.calendar-panel {
+    flex-basis: 45%;
+}
+
+
+.patient-list-panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.patient-list-panel li {
+    background-color: #fff; 
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.patient-summary span {
+    margin-right: 10px;
+    color: #555;
+    font-size: 0.95em;
+}
+
+.patient-list-panel hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
+}
+
+.details-header, .details-header-small {
+    cursor: pointer;
+    font-weight: bold;
+    color: #007BFF;
+    margin-top: 15px;
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background-color: #e7f3ff;
+    border: 1px solid #cce0ff;
+}
+.details-header-small {
+    font-size: 0.9em;
+    margin-top: 5px;
+    background-color: #f0f0f0;
+    border-color: #ddd;
+    color: #333;
+}
+.details-header::before, .details-header-small::before {
+     content: '▶ '; 
+     margin-right: 3px;
+     font-size: 0.8em;
+}
+details[open] > summary::before {
+    content: '▼ ';
+}
+
+.details-content {
+    margin-top: 10px;
+    padding-left: 10px;
+}
+
+
+.staff-edit-form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.staff-edit-form input[type="text"],
+.staff-edit-form input[type="date"],
+.staff-edit-form input[type="tel"],
+.staff-edit-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95em;
+}
+
+.staff-edit-form input[readonly],
+.staff-edit-form textarea[readonly] {
+    background-color: #e9ecef; 
+    color: #495057;
+    cursor: not-allowed;
+}
+
+.staff-edit-form textarea {
+    min-height: 70px;
+    resize: vertical;
+}
+
+.permission-note {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 10px;
+}
+
+button.edit-btn, button.save-btn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.2s ease;
+}
+button.edit-btn:hover, button.save-btn:hover {
+    background-color: #0056b3;
+}
+button.save-btn {
+    background-color: #28a745; 
+}
+button.save-btn:hover {
+    background-color: #218838;
+}
+
+
+.calendar-view {
+     background-color: #fff; 
+     padding: 15px;
+     border: 1px solid #ddd;
+     border-radius: 5px;
+}
+
+.calendar-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.calendar-navigation .month-year {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.calendar-navigation .nav-btn {
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+.calendar-navigation .nav-btn:hover {
+    background-color: #e0e0e0;
+}
+
+#staff-calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; 
+}
+
+#staff-calendar-table th,
+#staff-calendar-table td {
+    border: 1px solid #ccc;
+    padding: 6px; 
+    text-align: center;
+    height: 75px; 
+    vertical-align: top;
+    font-size: 0.9em;
+}
+
+#staff-calendar-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #555;
+}
+
+#staff-calendar-table td .date-number {
+    display: block;
+    text-align: right;
+    font-weight: bold;
+    margin-bottom: 3px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+#staff-calendar-table td.other-month {
+    background-color: #f5f5f5;
+    color: #bbb;
+}
+#staff-calendar-table td.other-month .date-number {
+     color: #ccc;
+}
+
+#staff-calendar-table td.past {
+    background-color: #e3f2fd; 
+}
+#staff-calendar-table td.today {
+    background-color: #fff9c4; 
+    font-weight: bold;
+}
+#staff-calendar-table td.today .date-number {
+    color: #000;
+    background-color: #ffeb3b; 
+    border-radius: 50%;
+    display: inline-block;
+    padding: 2px 5px;
+    line-height: 1;
+    float: right; 
+}
+
+
+.appt-detail {
+    display: block;
+    font-size: 11px; 
+    margin-top: 4px;
+    color: #333;
+    background-color: #eef; 
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid #dde;
+    text-align: left;
+    line-height: 1.3;
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    white-space: nowrap; 
+}
+.appt-detail .patient-name {
+    font-weight: bold;
+    display: inline; 
+    margin-right: 3px;
+}
+.appt-detail a { 
+    color: #0056b3;
+    text-decoration: none;
+    margin-left: 5px;
+    font-weight: normal;
+    display: inline;
+}
+.appt-detail a:hover {
+    text-decoration: underline;
+}
+.appt-detail em { 
+    display: none;
+}
+
+
+.appointment-list-fallback-patient {
+    list-style: none;
+    padding-left: 5px;
+    margin-top: 5px;
+}
+.appointment-list-fallback-patient li {
+    font-size: 0.9em;
+    padding: 3px 0;
+    color: #444;
+}
+.appointment-list-fallback-patient a {
+     color: #007BFF;
+     margin-left: 10px;
+     font-size: 0.9em;
+}

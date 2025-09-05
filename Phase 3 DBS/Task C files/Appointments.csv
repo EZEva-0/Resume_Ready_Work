@@ -1,0 +1,11 @@
+appointments_id,patient_id,doctor,date_time,appointments_type,status,duration,insurance_id,note,staff_id
+1,1,2025-04-15 9:30:00,Consultation,Completed,30,1,Routine heart check-up,1
+2,2,2025-04-15 11:00:00,Follow-up,Scheduled,20,2,Follow-up on pediatric fever,2
+3,3,2025-04-16 14:00:00,New Patient,Cancelled,45,3,First-time visit,3
+4,4,2025-04-17 10:15:00,Check-up,Completed,25,4,Annual physical,4
+5,5,2025-04-18 11:45:00,Emergency,Completed,60,5,Chest pain evaluation,5
+6,6,2025-04-19 9:00:00,Consultation,Scheduled,30,6,Developmental screening,6
+7,7,2025-04-20 15:30:00,Follow-up,Completed,20,7,Medication review,7
+8,8,2025-04-21 11:30:00,New Patient,Scheduled,40,8,Pediatric intake,8
+9,9,2025-04-22 8:00:00,Emergency,Completed,50,9,Arrhythmia symptoms,9
+10,10,2025-04-22 16:00:00,Check-up,Cancelled,30,10,Missed due to patient no-show,10

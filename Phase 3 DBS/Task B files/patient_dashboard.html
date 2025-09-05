@@ -1,0 +1,195 @@
+<!-- Patient Dashboard HTML - Full Version with Pre-Filled Info and Appointments -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      display: flex;
+      gap: 40px;
+    }
+    .box {
+      flex: 1;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: #f4f9fc;
+    }
+    .box h2 {
+      margin-top: 0;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    input[readonly], textarea[readonly], select[disabled] {
+      background-color: #e9ecef;
+      color: #495057;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .dropdown-header {
+      cursor: pointer;
+      font-weight: bold;
+      color: #007BFF;
+      margin-top: 15px;
+    }
+    .dropdown-content {
+      display: none;
+      margin-top: 10px;
+    }
+    .calendar {
+      margin-top: 40px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: #fff;
+    }
+    .calendar h3 {
+      margin-top: 0;
+    }
+    .calendar table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .calendar th, .calendar td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      height: 60px;
+      vertical-align: top;
+    }
+    .appt-time {
+      display: block;
+      font-size: 12px;
+      margin-top: 4px;
+      color: #333;
+    }
+    .today {
+      background-color: #fff9c4;
+    }
+    .future {
+      background-color: #fce4ec;
+    }
+    .past {
+      background-color: #e3f2fd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <div class="container">
+    <div class="box">
+      <h2>Your Profile</h2>
+      <form id="profile-form">
+        <label>Full Name:<input type="text" name="full_name" value="Johnathan Doe" readonly></label>
+        <label>DOB:<input type="date" name="dob" value="1985-03-15" readonly></label>
+        <label>Gender:
+          <select name="gender" disabled>
+            <option selected>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </label>
+        <label>Phone Number:<input type="text" name="phone" value="555-432-6789" readonly></label>
+        <label>Emergency Contact:<input type="text" name="emergency_contact" value="123-456-7890" readonly></label>
+        <label>Address:<textarea name="address" readonly>742 Evergreen Terrace, Springfield</textarea></label>
+        <label>Email:<input type="email" name="email" value="john.doe@example.com" readonly></label>
+        <label>Medical History:<textarea name="medical_history" readonly>Hypertension; allergic to penicillin.</textarea></label>
+        <label>Billing Info:<textarea name="billing_info" readonly>Insurance: HealthFirst Platinum Plus</textarea></label>
+        <button type="button" onclick="enableEdit()">Update Info</button>
+        <button type="submit" style="display:none;" id="saveBtn">Save Changes</button>
+      </form>
+    </div>
+
+    <div class="box">
+      <h2>Appointments</h2>
+      <div>
+        <h3>Next Appointment</h3>
+        <p><strong>Date:</strong> April 11, 2025</p>
+        <p><strong>Time:</strong> 2:00 PM</p>
+        <p><strong>Type:</strong> Blood Test</p>
+        <p><strong>Status:</strong> Scheduled</p>
+      </div>
+
+      <div>
+        <div class="dropdown-header" onclick="toggleDropdown('future-appts')">▶ Future Appointments</div>
+        <div id="future-appts" class="dropdown-content">
+          <ul>
+            <li>April 15, 2025 - Follow-up - Scheduled</li>
+          </ul>
+        </div>
+
+        <div class="dropdown-header" onclick="toggleDropdown('past-appts')">▶ Past Appointments</div>
+        <div id="past-appts" class="dropdown-content">
+          <ul>
+            <li>April 5, 2025 - Consultation - Completed (3:00 PM)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="calendar">
+    <h3>Calendar View</h3>
+    <table>
+      <tr>
+        <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+      </tr>
+      <tr>
+        <td></td><td></td><td>1</td><td>2</td><td>3</td><td>4</td><td class="past">5<span class="appt-time">3:00 PM</span></td>
+      </tr>
+      <tr>
+        <td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td class="today">11<span class="appt-time">2:00 PM</span></td><td>12</td>
+      </tr>
+      <tr>
+        <td>13</td><td>14</td><td class="future">15<span class="appt-time">9:00 AM</span></td><td>16</td><td>17</td><td>18</td><td>19</td>
+      </tr>
+      <tr>
+        <td>20</td><td>21</td><td>22</td><td>23</td><td>24</td><td>25</td><td>26</td>
+      </tr>
+      <tr>
+        <td>27</td><td>28</td><td>29</td><td>30</td><td></td><td></td><td></td>
+      </tr>
+    </table>
+  </div>
+
+  <script>
+    function toggleDropdown(id) {
+      const content = document.getElementById(id);
+      content.style.display = (content.style.display === "block") ? "none" : "block";
+    }
+
+    function enableEdit() {
+      const form = document.getElementById("profile-form");
+      Array.from(form.elements).forEach(el => {
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+          el.removeAttribute("readonly");
+        }
+        if (el.tagName === 'SELECT') {
+          el.removeAttribute("disabled");
+        }
+      });
+      document.getElementById("saveBtn").style.display = "inline-block";
+    }
+  </script>
+</body>
+</html>

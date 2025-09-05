@@ -1,0 +1,22 @@
+use Vitals;
+
+LOAD DATA INFILE '/home/Insurance.csv' INTO TABLE Insurance
+    FIELDS TERMINATED BY ','
+    LINES TERMINATED BY '\r\n'
+    IGNORE 1 LINES;
+
+LOAD DATA INFILE '/home/Staff.csv' INTO TABLE Staff
+    FIELDS TERMINATED BY ','
+    LINES TERMINATED BY '\r\n'
+    IGNORE 1 LINES;
+
+LOAD DATA INFILE '/home/Patient.csv' INTO TABLE Patient
+    FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+    LINES TERMINATED BY '\r\n'
+    IGNORE 1 LINES;
+
+
+LOAD DATA INFILE '/home/Appointments.csv' INTO TABLE Appointments
+    FIELDS TERMINATED BY ','
+    LINES TERMINATED BY '\r\n'
+    IGNORE 1 LINES;

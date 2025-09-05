@@ -1,0 +1,11 @@
+insurance_id,policy_number,provider,plan_type,coverage_end_date,policy_holder
+1,PL-904821,UnitedHealthCare,PPO,2026-03-15,Henry Barnes
+2,AX-221498,Aetna,HMO,2025-12-01,Adison Owens
+3,BL-884229,Blue Cross Blue Shield,EPO,2027-07-30,Florrie Ross
+4,KA-002317,Kaiser Permanente,POS,2025-09-22,Ned Watson
+5,CV-711249,Cigna,PPO,2026-11-11,Kelsey Cameron
+6,HM-320844,Humana,HMO,2025-06-05,Blake Adams
+7,PR-552410,Progressive Health,PPO,2027-01-19,Adele Clark
+8,ME-100278,MetLife,EPO,2026-04-08,Frederick Davis
+9,GE-948172,GEHA,POS,2025-08-31,Michelle Harper
+10,ML-732001,Molina Healthcare,HMO,2026-12-25,Cherry Sullivan
